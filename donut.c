@@ -2,19 +2,24 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
-#define BOARD_HEIGHT 20
-#define BOARD_WIDTH 20
+#include <windows.h>
+#define BOARD_HEIGHT 40
+#define BOARD_WIDTH 40
 #define TAU 2 * 3.14159265358979323846
-#define URANGE 40
-#define VRANGE 40
+#define URANGE 100
+#define VRANGE 100
 #define TAU_U TAU / URANGE
 #define TAU_V TAU / VRANGE
-char luminance_index[13] = ".,-~:;=!*#$@";
+char luminance_index[] = ".,-~:;=!*#$@";
 void render_donut(double a, double b) {
     double zbuf[BOARD_WIDTH][BOARD_HEIGHT];
     char scrn[BOARD_WIDTH][BOARD_HEIGHT];
-    memset(zbuf, 0, sizeof(zbuf));
     memset(scrn, ' ', sizeof(scrn));
+    for(int i=0;i<BOARD_WIDTH;i++){
+        for(int j=0;j<BOARD_HEIGHT;j++){
+            zbuf[i][j] = -INFINITY;
+        }
+    }
     double sa = sin(a), ca = cos(a);
     double sb = sin(b), cb = cos(b);
     double uang = 0, vang = 0;
@@ -32,18 +37,25 @@ void render_donut(double a, double b) {
             y = -sa * sb * cv * (su+2) + sa * cb * cu + ca * sv * (su+2);
             z = cb * cv * (su+2) + sb * cu;
             L = sa * cb * cu + sa * sb * su * cv - ca * su * sv - sb * cu + cb * su * cv;
-            //note! L has a range from -sqrt(2) to sqrt(2)
-            int xind = floor((x*1.66) + 6.5);
-            int yind = floor((y*1.66) + 6.5);
-            if (zbuf[yind][xind] < z) {
-                zbuf[yind][xind] = z;
-                scrn[yind][xind] = luminance_index[(int)floor(L*4.2 + 6.5)];
+            if (L > 0){
+                //note! L has a range from -sqrt(2) to sqrt(2)
+                int xind = (int)floor((x+3) * BOARD_WIDTH * 0.167);
+                int yind = (int)floor((y+3) * BOARD_HEIGHT * 0.167);
+                if (xind >= 0 && yind >= 0 && BOARD_WIDTH > xind && BOARD_HEIGHT > yind) {
+                    if (zbuf[yind][xind] < z) {
+                        zbuf[yind][xind] = z;
+                        int li = (int)(L*4.2 + 6);
+                        li = li < 0 ? 0 : li;
+                        li = li > 12 ? 12 : li;
+                        scrn[yind][xind] = luminance_index[li];
+                    }
+                }
             }
         }
     }
     for(int i=0;i<BOARD_HEIGHT;i++){
         for(int j=0;j<BOARD_WIDTH;j++){
-            printf("%c", scrn[i][j]);
+            printf("%c", scrn[j][i]);
         }
         printf("\n");
     }
@@ -55,7 +67,10 @@ int main(int argc, char* argv[]) {
     }
     int maxiters = atoi(argv[1]);
     for (int i = 0; i < maxiters; i++) {
-        render_donut(0.01 * i, 0.02 * i);
+        system("cls");
+        render_donut(0.03 * i, 0.05 * i);
+        Sleep(10);
     }
+    getchar();
     return 0;
 }
