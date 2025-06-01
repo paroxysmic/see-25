@@ -1,39 +1,61 @@
-#include <stdio.h>
-#define _USE_MATH_DEFINES
 #include <math.h>
+#include <stdio.h>
 #include <string.h>
-#define BOARD_HEIGHT 10
-#define BOARD_WIDTH 10
-#define TAU 2 * M_PI
-#define TAU_40 TAU / 40
-char luminance_index[] = ".,-~:;=!*#$@";
-void render_donut(double a, double b){
+#include <stdlib.h>
+#define BOARD_HEIGHT 20
+#define BOARD_WIDTH 20
+#define TAU 2 * 3.14159265358979323846
+#define URANGE 40
+#define VRANGE 40
+#define TAU_U TAU / URANGE
+#define TAU_V TAU / VRANGE
+char luminance_index[13] = ".,-~:;=!*#$@";
+void render_donut(double a, double b) {
     double zbuf[BOARD_WIDTH][BOARD_HEIGHT];
-    memset(zbuf, 0, sizeof(int) * BOARD_HEIGHT * BOARD_WIDTH);
-    /*
-    #should be (cosu, (sinu+2)cosv, -(sinu+2)sinv) u is small ring, v is big ring
-    */
-    for (double u=0;u < TAU;u += TAU_40){
-        for (double v=0;v < TAU;v += TAU_40){
-            double x = cos(u);
-            double y = (sin(u)+2) * cos(v);
-            double z = (sin(u)+2) * sin(v);
-            
+    char scrn[BOARD_WIDTH][BOARD_HEIGHT];
+    memset(zbuf, 0, sizeof(zbuf));
+    memset(scrn, ' ', sizeof(scrn));
+    double sa = sin(a), ca = cos(a);
+    double sb = sin(b), cb = cos(b);
+    double uang = 0, vang = 0;
+    double su, cu, sw, sv, cv, x, y, z, ny, nz, L;
+    for (double u = 0; u < URANGE; u++) {
+        uang += TAU_U;
+        su = sin(u);
+        cu = cos(u);
+        for (double v = 0; v < VRANGE; v++) {
+            vang += TAU_V;
+            sv = sin(v),
+            cv = cos(v);
+            sw = sv * su;
+            x = -ca * sb * cv * (su+2) + ca * cb * cu - sa * sv * (su+2);
+            y = -sa * sb * cv * (su+2) + sa * cb * cu + ca * sv * (su+2);
+            z = cb * cv * (su+2) + sb * cu;
+            L = sa * cb * cu + sa * sb * su * cv - ca * su * sv - sb * cu + cb * su * cv;
+            //note! L has a range from -sqrt(2) to sqrt(2)
+            int xind = floor((x*1.66) + 6.5);
+            int yind = floor((y*1.66) + 6.5);
+            if (zbuf[yind][xind] < z) {
+                zbuf[yind][xind] = z;
+                scrn[yind][xind] = luminance_index[(int)floor(L*4.2 + 6.5)];
+            }
         }
     }
-    return;
-}
-void displ_board(double board[BOARD_WIDTH][BOARD_HEIGHT]){
-    for (int i=0;i < BOARD_HEIGHT; i++){
-        for (int j=0;j < BOARD_WIDTH; j++){
-            printf("%d", luminance_index[(int)(board[j][i])]);
+    for(int i=0;i<BOARD_HEIGHT;i++){
+        for(int j=0;j<BOARD_WIDTH;j++){
+            printf("%c", scrn[i][j]);
         }
         printf("\n");
     }
-} 
-int main(){
-    double screen[BOARD_WIDTH][BOARD_HEIGHT];
-    init_board(screen);
-    displ_board(screen);
+    return;
+}
+int main(int argc, char* argv[]) {
+    if (argc != 2) {
+        printf("wrong number of args!");
+    }
+    int maxiters = atoi(argv[1]);
+    for (int i = 0; i < maxiters; i++) {
+        render_donut(0.01 * i, 0.02 * i);
+    }
     return 0;
-}    
+}
