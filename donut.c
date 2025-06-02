@@ -32,7 +32,6 @@ void render_donut(double a, double b) {
             vang += TAU_V;
             sv = sin(v),
             cv = cos(v);
-            sw = sv * su;
             x = -ca * sb * cv * (su+2) + ca * cb * cu - sa * sv * (su+2);
             y = -sa * sb * cv * (su+2) + sa * cb * cu + ca * sv * (su+2);
             z = cb * cv * (su+2) + sb * cu;
@@ -47,7 +46,7 @@ void render_donut(double a, double b) {
                         int li = (int)(L*4.2 + 6);
                         li = li < 0 ? 0 : li;
                         li = li > 12 ? 12 : li;
-                        scrn[yind][xind] = luminance_index[li];
+                        scrn[xind][yind] = luminance_index[li];
                     }
                 }
             }

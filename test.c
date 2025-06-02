@@ -1,35 +1,21 @@
 #include <stdio.h>
 #include <string.h>
-unsigned long hashcode = 0x21DD09EC;
-unsigned long check_password(const char* p) {
-    int* ip = (int*)p;
-    int i;
-    int res = 0;
-    for (i = 0; i < 5; i++) {
-        res += ip[i];
-    }
-    return res;
-}
+#include "foo.h"
 
-int main(int argc, char* argv[]) {
-    printf("%c", 0x21);
-    printf("%c", 0xDD);
-    printf("%c", 0x09);
-    printf("%c", 0xEC);
-    if (argc < 2) {
-        printf("usage : %s [passcode]\n", argv[0]);
-        return 0;
+int main(){
+    int npt;
+    int arr[5] = {0, 1, 2, 3, 4};
+    while(npt != 'q'){
+        for(int i=0;i<5;i++){
+            printf("%d ", arr[i]);
+        }
+        printf("\nwhat number next?");
+        npt = getchar();
+        while (npt < '0' || npt > '4'){
+            printf("hey try again you need to actually put in a number between 0 and 4");
+            npt = getchar();
+        }
+        foo(npt - '0', &arr[0]);
     }
-    if (strlen(argv[1]) != 20) {
-        printf("passcode length should be 20 bytes\n");
-        return 0;
-    }
-
-    if (hashcode == check_password(argv[1])) {
-        // THIS IS SUCCESS!
-        printf("you win!");
-        return 0;
-    } else
-        printf("wrong passcode.\n");
     return 0;
 }
